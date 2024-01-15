@@ -9,49 +9,60 @@ import numpy as np
 
 G_CONSTANT = 6.6743e-11
 
-# object representing solar system
-# contains all other objects
+"""
+object representing solar system
+
+contains all body objects
+
+"""
 class System:
     def __init__(self):
-        self.suns = []
-        self.planets = []
+        self.bodies = []
 
-    def make_sun(self, new_sun):
-        self.suns.append(new_sun)
+        self.axis = plt.axes(projection='3d')
 
-    def make_planet(self, new_planet):
-        self.planets.append(new_planet)
+    def make_body(self, new_body):
+        self.bodies.append(new_body)
+
+    def calculate_accel(self):
+        for n, body in enumerate(len(self.bodies)):
+            body.acceleration(self.bodies, n)
 
 """
-Creates sun object
+Creates body object
 
 Args:
-    mass (float) = mass of the sun
-    velocity (float) = starting velocity of the sun
-    position (np.ndarray) = starting position of the sun
-    system (class System) = system of the sun
+    __init__():
+        mass (float): mass of the body
+        velocity (ndarray): starting velocity of the body
+        position (ndarray): starting position of the body
+        system (class System): system of the body
+    acceleration():
+        bodies (list): all bodies in the system
+        n (int): which body is being calculated
+
 
 """
-class Sun:
+class Body:
     def __init__(self, mass, velocity, position, system):
         self.mass = mass
         self.velocity = velocity
         self.position = position
         self.system = system
 
-"""
-Creates planet object
+        self.system.make_body(self)
 
-Args:
-    mass (float) = mass of the planet
-    velocity (float) = starting velocity of the planet
-    position (np.ndarray) = starting position of the planet
-    system (class System) = system of the planet
+    def acceleration(self, bodies, n):
+        self.accel = np.array([0, 0, 0])
 
-"""
-class Planet:
-    def __init__(self, mass, velocity, position, system):
-        self.mass = mass
-        self.velocity = velocity
-        self.position = position
-        self.system = system
+        for i in range(len(bodies)):
+            if i != n:
+                force_vector = self.position - bodies[i].position
+                distance = np.linalg.norm(force_vector)
+
+                self.accel += (G_CONSTANT * bodies[i].mass * force_vector) / distance**3
+
+
+
+# System()
+# plt.show()
