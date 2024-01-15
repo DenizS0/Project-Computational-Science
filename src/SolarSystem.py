@@ -24,7 +24,7 @@ class System:
     def make_body(self, new_body):
         self.bodies.append(new_body)
 
-    def calculate_accel(self):
+    def calculate_acceleration(self):
         for n, body in enumerate(len(self.bodies)):
             body.acceleration(self.bodies, n)
 
@@ -41,7 +41,6 @@ Args:
         bodies (list): all bodies in the system
         n (int): which body is being calculated
 
-
 """
 class Body:
     def __init__(self, mass, velocity, position, system):
@@ -52,12 +51,13 @@ class Body:
 
         self.system.make_body(self)
 
+    # calculate acceleration according to a = gm/r^2
     def acceleration(self, bodies, n):
         self.accel = np.array([0, 0, 0])
 
         for i in range(len(bodies)):
             if i != n:
-                force_vector = self.position - bodies[i].position
+                force_vector = bodies[i].position - self.position
                 distance = np.linalg.norm(force_vector)
 
                 self.accel += (G_CONSTANT * bodies[i].mass * force_vector) / distance**3
