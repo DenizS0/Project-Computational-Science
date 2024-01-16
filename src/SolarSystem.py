@@ -32,8 +32,9 @@ class System:
 
     def draw_plot(self):
         self.axes = plt.axes(projection = '3d')
-        self.axes.set_xlim(-6, 6)
-        self.axes.set_ylim(-6, 6)
+        self.axes.set_xlim(-1, 1)
+        self.axes.set_ylim(-1, 1)
+        self.axes.set_zlim(-1, 1)
         for body in self.bodies:
             body.draw_body()
 
@@ -100,6 +101,7 @@ class Body:
 solarsys = System()
 earth = Body(3.0e-6, np.array([0, 6.279, 0]), np.array([0,0,0]), np.array([1,0,0]), solarsys)
 sun = Body(1, np.array([0,0,0]), np.array([0,0,0]), np.array([0,0,0]), solarsys)
+venus = Body(2.455e-6, np.array([0, np.cos(0.059) * 7.383, np.sin(0.059) * 7.383]), np.array([0,0,0]), np.array([np.cos(0.059) * 0.72, 0, np.sin(0.059) * 0.72]), solarsys)
 
 for t in range(365):
     solarsys.run_sim()
