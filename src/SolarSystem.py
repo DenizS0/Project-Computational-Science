@@ -1,6 +1,6 @@
 #
 # Names: Dagmar Salomons & Deniz Saglam
-# Student IDs: ... & 13827189
+# Student IDs: 13981714 & 13827189
 #
 # 3D Simulation of the solar system
 
@@ -20,7 +20,6 @@ class System:
     def __init__(self):
         self.bodies = []
         self.figure = plt.figure()
-        self.axes = plt.axes(projection = '3d')
 
     def make_body(self, new_body):
         self.bodies.append(new_body)
@@ -33,6 +32,8 @@ class System:
 
     def draw_plot(self):
         self.axes = plt.axes(projection = '3d')
+        self.axes.set_xlim(-6, 6)
+        self.axes.set_ylim(-6, 6)
         for body in self.bodies:
             body.draw_body()
 
@@ -97,10 +98,10 @@ class Body:
 
 
 solarsys = System()
-earth = Body(8.0e24, np.array([10.0,10.0,10.0]), np.array([0,0,0]), np.array([0,0,0]), solarsys)
+earth = Body(3.0e-6, np.array([0, 6.279, 0]), np.array([0,0,0]), np.array([1,0,0]), solarsys)
 sun = Body(1, np.array([0,0,0]), np.array([0,0,0]), np.array([0,0,0]), solarsys)
 
-while True:
+for t in range(365):
     solarsys.run_sim()
-    plt.pause(.01)
+    plt.pause(.001)
     plt.clf()
