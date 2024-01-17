@@ -7,7 +7,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-G_CONSTANT = 4.0 * np.pi**2
+G_CONSTANT = 6.67e-11 * (3.16e7)**2
 dt = 1.0 / 365
 
 """
@@ -22,9 +22,9 @@ class System:
 
         self.figure = plt.figure()
         self.axes = self.figure.add_subplot(111, projection='3d')
-        self.axes.set_xlim(-1, 1)
-        self.axes.set_ylim(-1, 1)
-        self.axes.set_zlim(-1, 1)
+        self.axes.set_xlim(-228.0e9, 228.0e9)
+        self.axes.set_ylim(-228.0e9, 228.0e9)
+        self.axes.set_zlim(-228.0e9, 228.0e9)
 
     def make_body(self, new_body):
         self.bodies.append(new_body)
@@ -100,15 +100,21 @@ class Body:
 
 
 solarsys = System()
-earth = Body(3.0e-6, np.array([0, 6.279, 0]), np.array([0,0,0]), np.array([1,0,0]), solarsys)
-sun = Body(1, np.array([0,0,0]), np.array([0,0,0]), np.array([0,0,0]), solarsys)
-venus = Body(2.455e-6, np.array([0, np.cos(0.059) * 7.383, np.sin(0.059) * 7.383]), np.array([0,0,0]), np.array([np.cos(0.059) * 0.72, 0, np.sin(0.059) * 0.72]), solarsys)
-
+sun = Body(2e30, np.array([0,0,0]), np.array([0,0,0]) * 3.16e7, np.array([0,0,0]), solarsys)
+mercury = Body(0.330e24, np.array([0, np.cos(7 * np.pi/180) * 47.4, np.sin(7 * np.pi/180) * 47.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(7 * np.pi/180) * 57.9e9, 0, np.sin(7 * np.pi/180) * 57.9e9]), solarsys)
+venus = Body(4.87e24, np.array([0, np.cos(3.4 * np.pi/180) * 35.0, np.sin(3.4 * np.pi/180) * 35.0]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(3.4 * np.pi/180) * 108.2e9, 0, np.sin(3.4 * np.pi/180) * 108.2e9]), solarsys)
+earth = Body(5.97e24, np.array([0, 29.8, 0]) * 3.16e10, np.array([0,0,0]), np.array([149.6e9, 0, 0]), solarsys)
+moon = Body(0.073e24, np.array([0, np.cos(5.1 * np.pi/180) * 29.8, np.sin(5.1 * np.pi/180) * 29.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(5.1 * np.pi/180) * 150e9, 0, np.sin(5.1 * np.pi/180) * 150e9]), solarsys)
+mars = Body(0.642e24, np.array([0, np.cos(1.8 * np.pi/180) * 24.1, np.sin(1.8 * np.pi/180) * 24.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 228.0e9, 0, np.sin(1.8 * np.pi/180) * 228.0e9]), solarsys)
+#jupiter = Body(1898e24, np.array([0, np.cos(1.3 * np.pi/180) * 13.1, np.sin(1.3 * np.pi/180) * 13.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.3 * np.pi/180) * 778.5e9, 0, np.sin(1.3 * np.pi/180) * 778.5e9]), solarsys)
+#saturn = Body(568e24, np.array([0, np.cos(2.5 * np.pi/180) * 9.7, np.sin(2.5 * np.pi/180) * 9.7]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(2.5 * np.pi/180) * 1432.0e9, 0, np.sin(2.5 * np.pi/180) * 1432.0e9]), solarsys)
+#uranus = Body(86.6e24, np.array([0, np.cos(0.8 * np.pi/180) * 6.8, np.sin(0.8 * np.pi/180) * 6.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(0.8 * np.pi/180) * 2867.0e9, 0, np.sin(0.8 * np.pi/180) * 2867.0e9]), solarsys)
+#neptune = Body(102e24, np.array([0, np.cos(1.8 * np.pi/180) * 5.4, np.sin(1.8 * np.pi/180) * 5.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 4515.0e9, 0, np.sin(1.8 * np.pi/180) * 4515.0e9]), solarsys)
 
 for t in range(365):
     solarsys.run_sim()
     plt.pause(0.001)
 
-    for artist in plt.gca().lines + plt.gca().collections:
+    for artist in plt.gca().get_lines():
         artist.remove()
 
