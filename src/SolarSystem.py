@@ -21,6 +21,7 @@ contains all body objects
 class System:
     def __init__(self):
         self.bodies = []
+        self.energy = []
 
         self.figure = plt.figure()
         self.axes = self.figure.add_subplot(111, projection='3d')
@@ -37,7 +38,23 @@ class System:
         self.calculate_velocity()
         self.draw_plot()
 
+        self.total_energy()
+
+    def total_energy(self):
+        total = 0
+
+        for body in self.bodies:
+            total += .5 * body.mass * np.linalg.norm(body.velocity)**2
+
+            for i in range(len(self.bodies)):
+                if self.bodies[i] != body:
+                    total += (-0.5 * G_CONSTANT * body.mass * self.bodies[i].mass) / np.linalg.norm(self.bodies[i].position - body.position)
+
+        self.energy.append(total)
+
+
     def draw_plot(self):
+        self.bodies.sort(key=lambda item: item.position[0])
         for body in self.bodies:
             body.draw_body()
 
@@ -108,7 +125,7 @@ sun = Body(2e30, np.array([0,0,0]), np.array([0,0,0]) * 3.16e7, np.array([0,0,0]
 mercury = Body(0.330e24, np.array([0, np.cos(7 * np.pi/180) * 47.4, np.sin(7 * np.pi/180) * 47.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(7 * np.pi/180) * 57.9e9, 0, np.sin(7 * np.pi/180) * 57.9e9]), 3, "burlywood", solarsys)
 venus = Body(4.87e24, np.array([0, np.cos(3.4 * np.pi/180) * 35.0, np.sin(3.4 * np.pi/180) * 35.0]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(3.4 * np.pi/180) * 108.2e9, 0, np.sin(3.4 * np.pi/180) * 108.2e9]), 5, "blanchedalmond", solarsys)
 earth = Body(5.97e24, np.array([0, 29.8, 0]) * 3.16e10, np.array([0,0,0]), np.array([149.6e9, 0, 0]), 5, "deepskyblue", solarsys)
-moon = Body(0.073e24, np.array([0, np.cos(5.1 * np.pi/180) * 29.8, np.sin(5.1 * np.pi/180) * 29.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(5.1 * np.pi/180) * 150e9, 0, np.sin(5.1 * np.pi/180) * 150e9]), 1, "darkgray", solarsys)
+#moon = Body(0.073e24, np.array([0, np.cos(5.1 * np.pi/180) * 29.8, np.sin(5.1 * np.pi/180) * 29.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(5.1 * np.pi/180) * 150e9, 0, np.sin(5.1 * np.pi/180) * 150e9]), 1, "darkgray", solarsys)
 mars = Body(0.642e24, np.array([0, np.cos(1.8 * np.pi/180) * 24.1, np.sin(1.8 * np.pi/180) * 24.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 228.0e9, 0, np.sin(1.8 * np.pi/180) * 228.0e9]), 4, "goldenrod", solarsys)
 jupiter = Body(1898e24, np.array([0, np.cos(1.3 * np.pi/180) * 13.1, np.sin(1.3 * np.pi/180) * 13.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.3 * np.pi/180) * 778.5e9, 0, np.sin(1.3 * np.pi/180) * 778.5e9]), 12, "peru", solarsys)
 saturn = Body(568e24, np.array([0, np.cos(2.5 * np.pi/180) * 9.7, np.sin(2.5 * np.pi/180) * 9.7]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(2.5 * np.pi/180) * 1432.0e9, 0, np.sin(2.5 * np.pi/180) * 1432.0e9]), 10, "khaki", solarsys)
@@ -122,3 +139,9 @@ for t in range(365):
     for artist in plt.gca().get_lines():
         artist.remove()
 
+days = [i for i in range(365)]
+
+energy = [((solarsys.energy[i] - solarsys.energy[0]) / solarsys.energy[0]) for i in range(len(solarsys.energy))]
+plt.clf()
+plt.plot(days, energy, "b-")
+plt.show()
