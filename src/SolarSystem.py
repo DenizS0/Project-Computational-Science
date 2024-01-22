@@ -25,9 +25,9 @@ class System:
 
         self.figure = plt.figure()
         self.axes = self.figure.add_subplot(111, projection='3d')
-        self.axes.set_xlim(-550.0e10, 550.0e10)
-        self.axes.set_ylim(-550.0e10, 550.0e10)
-        self.axes.set_zlim(-550.0e10, 550.0e10)
+        self.axes.set_xlim(-150e9, 150e9)
+        self.axes.set_ylim(-150e9, 150e9)
+        self.axes.set_zlim(-150e9, 150e9)
 
     def make_body(self, new_body):
         self.bodies.append(new_body)
@@ -120,28 +120,82 @@ class Body:
         self.system.axes.plot(self.position[0], self.position[1], self.position[2], marker="o", color=self.color, markersize = self.size)
 
 
-solarsys = System()
-sun = Body(2e30, np.array([0,0,0]), np.array([0,0,0]) * 3.16e7, np.array([0,0,0]), 25, "yellow", solarsys)
-mercury = Body(0.330e24, np.array([0, np.cos(7 * np.pi/180) * 47.4, np.sin(7 * np.pi/180) * 47.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(7 * np.pi/180) * 57.9e9, 0, np.sin(7 * np.pi/180) * 57.9e9]), 3, "burlywood", solarsys)
-venus = Body(4.87e24, np.array([0, np.cos(3.4 * np.pi/180) * 35.0, np.sin(3.4 * np.pi/180) * 35.0]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(3.4 * np.pi/180) * 108.2e9, 0, np.sin(3.4 * np.pi/180) * 108.2e9]), 5, "blanchedalmond", solarsys)
-earth = Body(5.97e24, np.array([0, 29.8, 0]) * 3.16e10, np.array([0,0,0]), np.array([149.6e9, 0, 0]), 5, "deepskyblue", solarsys)
-#moon = Body(0.073e24, np.array([0, np.cos(5.1 * np.pi/180) * 29.8, np.sin(5.1 * np.pi/180) * 29.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(5.1 * np.pi/180) * 150e9, 0, np.sin(5.1 * np.pi/180) * 150e9]), 1, "darkgray", solarsys)
-mars = Body(0.642e24, np.array([0, np.cos(1.8 * np.pi/180) * 24.1, np.sin(1.8 * np.pi/180) * 24.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 228.0e9, 0, np.sin(1.8 * np.pi/180) * 228.0e9]), 4, "goldenrod", solarsys)
-jupiter = Body(1898e24, np.array([0, np.cos(1.3 * np.pi/180) * 13.1, np.sin(1.3 * np.pi/180) * 13.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.3 * np.pi/180) * 778.5e9, 0, np.sin(1.3 * np.pi/180) * 778.5e9]), 12, "peru", solarsys)
-saturn = Body(568e24, np.array([0, np.cos(2.5 * np.pi/180) * 9.7, np.sin(2.5 * np.pi/180) * 9.7]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(2.5 * np.pi/180) * 1432.0e9, 0, np.sin(2.5 * np.pi/180) * 1432.0e9]), 10, "khaki", solarsys)
-uranus = Body(86.6e24, np.array([0, np.cos(0.8 * np.pi/180) * 6.8, np.sin(0.8 * np.pi/180) * 6.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(0.8 * np.pi/180) * 2867.0e9, 0, np.sin(0.8 * np.pi/180) * 2867.0e9]), 8, "paleturquoise", solarsys)
-neptune = Body(102e24, np.array([0, np.cos(1.8 * np.pi/180) * 5.4, np.sin(1.8 * np.pi/180) * 5.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 4515.0e9, 0, np.sin(1.8 * np.pi/180) * 4515.0e9]), 7, "cyan", solarsys)
+def simulation_solar_system():
+    solarsys = System()
+    sun = Body(2e30, np.array([0,0,0]), np.array([0,0,0]) * 3.16e7, np.array([0,0,0]), 25, "yellow", solarsys)
+    mercury = Body(0.330e24, np.array([0, np.cos(7 * np.pi/180) * 47.4, np.sin(7 * np.pi/180) * 47.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(7 * np.pi/180) * 57.9e9, 0, np.sin(7 * np.pi/180) * 57.9e9]), 3, "burlywood", solarsys)
+    venus = Body(4.87e24, np.array([0, np.cos(3.4 * np.pi/180) * 35.0, np.sin(3.4 * np.pi/180) * 35.0]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(3.4 * np.pi/180) * 108.2e9, 0, np.sin(3.4 * np.pi/180) * 108.2e9]), 5, "blanchedalmond", solarsys)
+    earth = Body(5.97e24, np.array([0, 29.8, 0]) * 3.16e10, np.array([0,0,0]), np.array([149.6e9, 0, 0]), 5, "deepskyblue", solarsys)
+    #moon = Body(0.073e24, np.array([0, np.cos(5.1 * np.pi/180) * 29.8, np.sin(5.1 * np.pi/180) * 29.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(5.1 * np.pi/180) * 150e9, 0, np.sin(5.1 * np.pi/180) * 150e9]), 1, "darkgray", solarsys)
+    mars = Body(0.642e24, np.array([0, np.cos(1.8 * np.pi/180) * 24.1, np.sin(1.8 * np.pi/180) * 24.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 228.0e9, 0, np.sin(1.8 * np.pi/180) * 228.0e9]), 4, "goldenrod", solarsys)
+    jupiter = Body(1898e24, np.array([0, np.cos(1.3 * np.pi/180) * 13.1, np.sin(1.3 * np.pi/180) * 13.1]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.3 * np.pi/180) * 778.5e9, 0, np.sin(1.3 * np.pi/180) * 778.5e9]), 12, "peru", solarsys)
+    saturn = Body(568e24, np.array([0, np.cos(2.5 * np.pi/180) * 9.7, np.sin(2.5 * np.pi/180) * 9.7]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(2.5 * np.pi/180) * 1432.0e9, 0, np.sin(2.5 * np.pi/180) * 1432.0e9]), 10, "khaki", solarsys)
+    uranus = Body(86.6e24, np.array([0, np.cos(0.8 * np.pi/180) * 6.8, np.sin(0.8 * np.pi/180) * 6.8]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(0.8 * np.pi/180) * 2867.0e9, 0, np.sin(0.8 * np.pi/180) * 2867.0e9]), 8, "paleturquoise", solarsys)
+    neptune = Body(102e24, np.array([0, np.cos(1.8 * np.pi/180) * 5.4, np.sin(1.8 * np.pi/180) * 5.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(1.8 * np.pi/180) * 4515.0e9, 0, np.sin(1.8 * np.pi/180) * 4515.0e9]), 7, "cyan", solarsys)
 
-for t in range(365):
-    solarsys.run_sim()
-    plt.pause(0.001)
+    for t in range(1000):
+        solarsys.run_sim()
+        plt.pause(0.001)
 
-    for artist in plt.gca().get_lines():
-        artist.remove()
+        for artist in plt.gca().get_lines():
+            artist.remove()
 
-days = [i for i in range(365)]
+    days = [i for i in range(365)]
 
-energy = [((solarsys.energy[i] - solarsys.energy[0]) / solarsys.energy[0]) for i in range(len(solarsys.energy))]
-plt.clf()
-plt.plot(days, energy, "b-")
-plt.show()
+    energy = [((solarsys.energy[i] - solarsys.energy[0]) / solarsys.energy[0]) for i in range(len(solarsys.energy))]
+    plt.clf()
+    plt.plot(days, energy, "b-")
+    plt.show()
+
+# n = number of stars, n = 1: simulation_solar_system
+def simulation_multiple_star_system(n):
+    mass_sun = 2e30
+
+    if n < 1 or n > 3:
+        print("Please choose n > 0 and n < 3")
+        return None
+    if n == 1:
+        simulation_solar_system()
+        return None
+    if n == 2:
+        starsys = System()
+        distance = 40e9
+        mass = mass_sun / 2
+
+        v1 = np.sqrt((G_CONSTANT * mass * (distance/2)) / (distance)**2)
+        v2 = -v1
+        x = [distance/2, -(distance/2)]
+        v = [v1, v2]
+
+        for i in range(n):
+            Body(mass, np.array([0,v[i],0]), np.array([0,0,0]), np.array([x[i],0,0]), 10, "yellow", starsys)
+        
+        mercury = Body(0.330e24, np.array([0, np.cos(7 * np.pi/180) * 47.4, np.sin(7 * np.pi/180) * 47.4]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(7 * np.pi/180) * 57.9e9, 0, np.sin(7 * np.pi/180) * 57.9e9]), 3, "burlywood", starsys)
+        venus = Body(4.87e24, np.array([0, np.cos(3.4 * np.pi/180) * 35.0, np.sin(3.4 * np.pi/180) * 35.0]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(3.4 * np.pi/180) * 108.2e9, 0, np.sin(3.4 * np.pi/180) * 108.2e9]), 5, "blanchedalmond", starsys)
+        earth = Body(5.97e24, np.array([0, 29.8, 0]) * 3.16e10, np.array([0,0,0]), np.array([149.6e9, 0, 0]), 5, "deepskyblue", starsys)
+
+        for t in range(365):
+            starsys.run_sim()
+            plt.pause(0.001)
+
+            for artist in plt.gca().get_lines():
+                artist.remove()
+    if n == 3:
+        starsys = System()
+
+        mass = 1
+        x = [-1, 1, 0]
+        vx = [0.39295, 0.39295, -2 * 0.39295]
+        vy = [0.09758, 0.09758, -2 * 0.09758]
+
+        for i in range(n):
+            Body(mass, np.array([vx[i], vy[i], 0]), np.array([0,0,0]), np.array([x[i], 0, 0]), 10, "yellow", starsys)
+    
+        for t in range(365):
+            starsys.run_sim()
+            plt.pause(0.001)
+
+            for artist in plt.gca().get_lines():
+                artist.remove()
+
+simulation_multiple_star_system(2)
