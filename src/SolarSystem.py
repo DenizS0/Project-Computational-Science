@@ -155,7 +155,7 @@ class Body:
     def draw_body(self):
         self.system.axes.plot(self.position[0], self.position[1], self.position[2], marker="o", color=self.color, markersize = self.size)
 
-#starting values taken from nasa horizon data set
+#starting values taken from nasa horizon data set @ 22 jan 2023
 def simulation_solar_system():
     solarsys = System()
     sun = Body(1.9885e30, np.array([2.0981e-3, -1.5479e-2, 7.8087e-5]) * 3.16e10, np.array([0,0,0]), np.array([-1.3512e9, -1.3976e7, 3.1592e7]), 25, "yellow", solarsys)
@@ -216,12 +216,23 @@ def simulation_multiple_star_system(n):
         venus = Body(4.87e24, np.array([0, np.cos(3.4 * np.pi/180) * 35.0, np.sin(3.4 * np.pi/180) * 35.0]) * 3.16e10, np.array([0,0,0]), np.array([np.cos(3.4 * np.pi/180) * 108.2e9, 0, np.sin(3.4 * np.pi/180) * 108.2e9]), 5, "blanchedalmond", starsys)
         earth = Body(5.97e24, np.array([0, 29.8, 0]) * 3.16e10, np.array([0,0,0]), np.array([149.6e9, 0, 0]), 5, "deepskyblue", starsys)
 
-        for t in range(1000000):
+        for t in range(years * fraction):
             starsys.run_sim()
-            plt.pause(0.001)
 
-            for artist in plt.gca().get_lines():
-                artist.remove()
+            if animation == True:
+                starsys.draw_plot()
+                plt.pause(0.001)
+
+                for artist in plt.gca().get_lines():
+                    artist.remove()
+        days = [i for i in range(years * fraction)]
+
+        energy = [((starsys.energy[i] - starsys.energy[0]) / starsys.energy[0]) for i in range(len(starsys.energy))]
+        plt.clf()
+        plt.plot(days, energy, "b-")
+        plt.title("Total Energy Difference")
+        plt.show()
+
     if n == 3:
         starsys = System()
 
@@ -233,11 +244,20 @@ def simulation_multiple_star_system(n):
         for i in range(n):
             Body(mass, np.array([vx[i], vy[i], 0]), np.array([0,0,0]), np.array([x[i], 0, 0]), 10, "yellow", starsys)
 
-        for t in range(365):
+        for t in range(years * fraction):
             starsys.run_sim()
-            plt.pause(0.001)
 
-            for artist in plt.gca().get_lines():
-                artist.remove()
+            if animation == True:
+                starsys.draw_plot()
+                plt.pause(0.001)
+
+                for artist in plt.gca().get_lines():
+                    artist.remove()
+
+        energy = [((starsys.energy[i] - starsys.energy[0]) / starsys.energy[0]) for i in range(len(starsys.energy))]
+        plt.clf()
+        plt.plot(days, energy, "b-")
+        plt.title("Total Energy Difference")
+        plt.show()
 
 simulation_multiple_star_system(1)
