@@ -9,13 +9,13 @@ import numpy as np
 
 G_CONSTANT = 6.67e-11 * (3.16e7)**2
 
-fraction = 100000
+fraction = 1000
 dt = 1.0 / fraction
 
 years = 1
 
-hermite = False
-animation = False
+hermite = True
+animation = True
 
 
 
@@ -146,11 +146,13 @@ class Body:
     # calculate new position acc. to hermite
     def hermite_vel(self):
         self.old_velocity = self.velocity
-        self.velocity = self.velocity + .5 * (self.old_accel + self.accel) * dt + 1/12 * (self.old_jerk - self.jerk) * dt**2
+        self.predict_acc = self.old_accel + self.old_jerk * dt
+        self.velocity = self.velocity + .5 * (self.old_accel + self.predict_acc) * dt + 1/12 * (self.old_jerk - self.jerk) * dt**2
         #print(self.jerk)
 
     def hermite_pos(self):
-        self.position = self.position + .5 * (self.velocity + self.old_velocity) * dt + 1/12 * (self.old_accel - self.accel) * dt**2
+        self.predict_v = self.velocity + self.accel * dt + 0.5 * self.old_jerk * dt**2
+        self.position = self.position + .5 * (self.velocity + self.predict_v) * dt + 1/12 * (self.old_accel - self.predict_acc) * dt**2
 
     def draw_body(self):
         self.system.axes.plot(self.position[0], self.position[1], self.position[2], marker="o", color=self.color, markersize = self.size)
