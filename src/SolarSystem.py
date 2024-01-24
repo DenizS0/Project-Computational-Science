@@ -18,12 +18,12 @@ dt = 1.0 / fraction
 years = 10
 
 # size of one side in the box in which the animation plays
-axis_size = 5e12
+axis_size = 10e13
 
 # True = hermite integration; False = velocity verlet integration
 hermite = True
 # show animation of system (very slow for small dt)
-animation = False
+animation = True
 
 
 
@@ -246,13 +246,31 @@ def simulation_multiple_star_system(n):
     if n == 3:
         starsys = System()
 
-        mass = 1
-        x = [-1, 1, 0]
-        vx = [0.39295, 0.39295, -2 * 0.39295]
-        vy = [0.09758, 0.09758, -2 * 0.09758]
+        mass = [2.4e30, 1.6e30, 0.246e30] # alpha centauri A, B en proxima
+        pm_ra = np.array([-3.710, -3.6, -3.781]) * np.pi/180 * 1/3600 # proper motion right ascension
+        pm_dec = np.array([0.482, 0.952, 0.770]) * np.pi/180 * 1/3600 # proper motion declination
+        distance = np.array([1.347, 1.347, 1.301]) * 3.0857e16
+        ra = np.array([14/24 + 39/1440 + 40.90/86400, 14/24 + 39/1440 + 39.39/86400, 14/24 + 29/1440 + 34.43/86400]) * np.pi/180 # (14h39m40.90s) 
+        dec = np.array([-(60/24 + 50/1440 + 6.53/86400), -(60/24 + 50/1440 + 22.10/86400), -(62/24 + 40/1440 + 34.26/86400)]) * np.pi/180
+
+        v_alpha = [(pm_ra[i] * distance[i]) for i in range(n)]
+        v_delta = [(pm_dec[i] * distance[i]) for i in range(n)]
+
+        vx = [(v_alpha[i] * np.cos(dec[i]) * np.cos(ra[i])) for i in range(n)]
+        vy = [(v_alpha[i] * np.cos(dec[i]) * np.sin(ra[i])) for i in range(n)]
+        vz = [(v_delta[i]) for i in range(n)]
+
+        x = [(distance[i] * np.cos(dec[i]) * np.cos(ra[i])) for i in range(n)]
+        y = [(distance[i] * np.cos(dec[i]) * np.sin(ra[i])) for i in range(n)]
+        z = [(distance[i] * np.sin(dec[i])) for i in range(n)]
+
+        cm_x = np.dot(mass, x) / np.sum(mass)
+        cm_y = np.dot(mass, y) / np.sum(mass)
+        cm_z = np.dot(mass, z) / np.sum(mass)
 
         for i in range(n):
-            Body(mass, np.array([vx[i], vy[i], 0]), np.array([0,0,0]), np.array([x[i], 0, 0]), 10, "yellow", starsys)
+            Body(mass[i], np.array([vx[i], vy[i], vz[i]]), np.array([0,0,0]), np.array([x[i] - cm_x, y[i] - cm_y, z[i] - cm_z]), 5, "yellow", starsys)
+            print(f"{x[i] - cm_x, y[i] - cm_y, z[i] - cm_z}")
 
         for t in range(years * fraction):
             starsys.run_sim()
@@ -263,11 +281,12 @@ def simulation_multiple_star_system(n):
 
                 for artist in plt.gca().get_lines():
                     artist.remove()
+        #days = [i for i in range(years * fraction)]
 
-        energy = [((starsys.energy[i] - starsys.energy[0]) / starsys.energy[0]) for i in range(len(starsys.energy))]
-        plt.clf()
-        plt.plot(days, energy, "b-")
-        plt.title("Total Energy Difference")
-        plt.show()
+        #energy = [((starsys.energy[i] - starsys.energy[0]) / starsys.energy[0]) for i in range(len(starsys.energy))]
+        #plt.clf()
+        #plt.plot(days, energy, "b-")
+        #plt.title("Total Energy Difference")
+        #plt.show()
 
-simulation_multiple_star_system(1)
+simulation_multiple_star_system(3)
