@@ -252,7 +252,7 @@ def simulation_multiple_star_system(n):
         distance = np.array([1.347, 1.347, 1.301]) * 3.0857e16
         ra = np.array([14/24 + 39/1440 + 40.90/86400, 14/24 + 39/1440 + 39.39/86400, 14/24 + 29/1440 + 34.43/86400]) * np.pi/180 # (14h39m40.90s) 
         dec = np.array([-(60/24 + 50/1440 + 6.53/86400), -(60/24 + 50/1440 + 22.10/86400), -(62/24 + 40/1440 + 34.26/86400)]) * np.pi/180
-        radial_v = np.array([]) * 3.16e10 # radial velocity
+        radial_v = np.array([-21.4, -18.6, -22.204]) * 3.16e10 # radial velocity
 
         v_alpha = [(pm_ra[i] * distance[i]) for i in range(n)]
         v_delta = [(pm_dec[i] * distance[i]) for i in range(n)]
