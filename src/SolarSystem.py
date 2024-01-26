@@ -41,11 +41,12 @@ class System:
         self.bodies = []
         self.energy = []
 
-        self.figure = plt.figure()
-        self.axes = self.figure.add_subplot(111, projection='3d')
-        self.axes.set_xlim(-axis_size, axis_size)
-        self.axes.set_ylim(-axis_size, axis_size)
-        self.axes.set_zlim(-axis_size, axis_size)
+        if animation == True:
+            self.figure = plt.figure()
+            self.axes = self.figure.add_subplot(111, projection='3d')
+            self.axes.set_xlim(-axis_size, axis_size)
+            self.axes.set_ylim(-axis_size, axis_size)
+            self.axes.set_zlim(-axis_size, axis_size)
 
     def make_body(self, new_body):
         self.bodies.append(new_body)
@@ -169,7 +170,6 @@ class Body:
 # starting values taken from nasa horizon data set @ 22 jan 2023 00:00
 def simulation_solar_system():
     solarsys = System()
-
     sun = Body(1.9885e30, np.array([2.0981e-3, -1.5479e-2, 7.8087e-5]) * 3.16e10, np.array([0,0,0]), np.array([-1.3512e9, -1.3976e7, 3.1592e7]), 25, "yellow", solarsys)
     mercury = Body(3.302e23, np.array([-1.0355e1, -4.6637e1, -2.8598e0]) * 3.16e10, np.array([0,0,0]), np.array([-5.9051e10, 2.5058e8, 5.3457e9]), 3, "burlywood", solarsys)
     venus = Body(48.685e24, np.array([3.6162e0, 3.464e1, 2.6736e-1]) * 3.16e10, np.array([0,0,0]), np.array([1.0657e11, -1.1721e10, -6.3566e9]), 5, "blanchedalmond", solarsys)
@@ -292,17 +292,18 @@ def simulation_multiple_star_system(n):
 
 
 # starting values taken from nasa horizon data set @ 22 jan 2023 00:00
-def make_solar_system(solarsys, x_value):
-    sun = Body(1.9885e30, np.array([2.0981e-3, -1.5479e-2, 7.8087e-5]) * 3.16e10, np.array([0,0,0]), np.array([-1.3512e9, -1.3976e7, 3.1592e7]), 25, "yellow", solarsys)
-    mercury = Body(3.302e23, np.array([-1.0355e1, -4.6637e1, -2.8598e0]) * 3.16e10, np.array([0,0,0]), np.array([-5.9051e10, 2.5058e8, 5.3457e9]), 3, "burlywood", solarsys)
-    venus = Body(48.685e24, np.array([3.6162e0, 3.464e1, 2.6736e-1]) * 3.16e10, np.array([0,0,0]), np.array([1.0657e11, -1.1721e10, -6.3566e9]), 5, "blanchedalmond", solarsys)
-    earth = Body(5.9722e24, np.array([-2.5929e1, -1.5639e1, 1.1483e-3]) * 3.16e10, np.array([0,0,0]), np.array([x_value, 1.2570e11, 2.5858e7]), 5, "deepskyblue", solarsys)
+# mass sun = 1.9885e30
+def make_solar_system(solarsys, x_value, mass_sun, v):
+    sun = Body(mass_sun, np.array([2.0981e-3, -1.5479e-2, 7.8087e-5]) * 3.16e10, np.array([0,0,0]), np.array([-1.3512e9, -1.3976e7, 3.1592e7]), 25, "yellow", solarsys)
+    mercury = Body(3.302e23, np.array([-1.0355e1, -4.6637e1, -2.8598e0]) * 3.16e10 * v, np.array([0,0,0]), np.array([-5.9051e10, 2.5058e8, 5.3457e9]), 3, "burlywood", solarsys)
+    venus = Body(48.685e24, np.array([3.6162e0, 3.464e1, 2.6736e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([1.0657e11, -1.1721e10, -6.3566e9]), 5, "blanchedalmond", solarsys)
+    earth = Body(5.9722e24, np.array([-2.5929e1, -1.5639e1, 1.1483e-3]) * 3.16e10 * v, np.array([0,0,0]), np.array([x_value, 1.2570e11, 2.5858e7]), 5, "deepskyblue", solarsys)
     #moon = Body(7.349e22, np.array([-2.5005e1, -1.5036e1, -9.1161e-3]) * 3.16e10, np.array([0,0,0]), np.array([-7.7780e10, 1.2541e11, -5.0425e6]), 1, "darkgray", solarsys)
-    mars = Body(6.4171e23, np.array([-2.3074e1, -1.3303e0, 5.3856e-1]) * 3.16e10, np.array([0,0,0]), np.array([-3.4426e10, 2.3527e11, 5.7741e9]), 4, "goldenrod", solarsys)
-    jupiter = Body(1.8982e27, np.array([-3.3404e0, 1.3283e1, 1.9609e-2]) * 3.16e10, np.array([0,0,0]), np.array([7.1676e11, 1.8057e11, -1.6785e10]), 12, "peru", solarsys)
-    saturn = Body(5.6834e26, np.array([4.7786e0, 8.0455e0, 3.3070e-1]) * 3.16e10, np.array([0,0,0]), np.array([1.2262e12, -8.0900e11, -3.4756e10]), 10, "khaki", solarsys)
-    uranus = Body(86.81e24, np.array([-5.0654e0, 4.2894e0, 8.1455e-2]) * 3.16e10, np.array([0,0,0]), np.array([1.9896e12, 2.1661e12,-1.7730e10]), 8, "paleturquoise", solarsys)
-    neptune = Body(102.4e24, np.array([4.8688e-1, 5.4420e0,-1.2344e-1]) * 3.16e10, np.array([0,0,0]), np.array([4.4517e12, -4.3035e11, -9.3732e10]), 7, "cyan", solarsys)
+    mars = Body(6.4171e23, np.array([-2.3074e1, -1.3303e0, 5.3856e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([-3.4426e10, 2.3527e11, 5.7741e9]), 4, "goldenrod", solarsys)
+    jupiter = Body(1.8982e27, np.array([-3.3404e0, 1.3283e1, 1.9609e-2]) * 3.16e10 * v, np.array([0,0,0]), np.array([7.1676e11, 1.8057e11, -1.6785e10]), 12, "peru", solarsys)
+    saturn = Body(5.6834e26, np.array([4.7786e0, 8.0455e0, 3.3070e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([1.2262e12, -8.0900e11, -3.4756e10]), 10, "khaki", solarsys)
+    uranus = Body(86.81e24, np.array([-5.0654e0, 4.2894e0, 8.1455e-2]) * 3.16e10 * v, np.array([0,0,0]), np.array([1.9896e12, 2.1661e12,-1.7730e10]), 8, "paleturquoise", solarsys)
+    neptune = Body(102.4e24, np.array([4.8688e-1, 5.4420e0,-1.2344e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([4.4517e12, -4.3035e11, -9.3732e10]), 7, "cyan", solarsys)
 
 # create function to describe data
 def fit_funtion(t, exponent, offset):
@@ -311,41 +312,50 @@ def fit_funtion(t, exponent, offset):
 
 # calculate lyapunov exponent to determine the chaos in the system
 def calculate_exponent():
-    solarsys1 = System()
-    solarsys2 = System()
+    mass_list = np.array([1/13, 1/10, 1/7, 1/3, 1, 1.2, 1.4, 1.6, 1.8, 2, 4, 6, 8, 10, 15, 20, 25, 30, 40, 50])
+    exp_list = []
+    exp_err_list = []
 
-    make_solar_system(solarsys1, -7.7974e10)
-    make_solar_system(solarsys2, -7.7974001e10)
+    for mass in mass_list:
+        solarsys1 = System()
+        solarsys2 = System()
 
-    delta = []
-    time = []
-    errors = []
+        make_solar_system(solarsys1, -7.7974e10, mass * 1.9885e30, np.sqrt(mass))
+        make_solar_system(solarsys2, -7.7974001e10, mass * 1.9885e30, np.sqrt(mass))
 
-    number = 99
-    for t in range(years * fraction):
-        solarsys1.run_sim()
-        solarsys2.run_sim()
+        delta = []
+        time = []
+        errors = []
 
-        if t == number:
-            dx = 0
-            dv = 0
-            for i in range(len(solarsys1.bodies)):
-                dx += np.linalg.norm(solarsys2.bodies[i].position - solarsys1.bodies[i].position)**2
-                dv += np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)**2
-            
-            delta.append(0.5 * np.log(dx + dv))
-            time.append(t)
-            errors.append(0.01)
-            number += 100
+        number = fraction/10 - 1
+        for t in range(years * fraction):
+            solarsys1.run_sim()
+            solarsys2.run_sim()
 
+            if t == number:
+                dx = 0
+                dv = 0
+                for i in range(len(solarsys1.bodies)):
+                    dx += np.linalg.norm(solarsys2.bodies[i].position - solarsys1.bodies[i].position)**2
+                    dv += np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)**2
+                
+                delta.append(0.5 * np.log(dx + dv))
+                time.append(t)
+                errors.append(0.01)
+                number += fraction/10
+
+        our_model = models.Model(fit_funtion)
+        result    = our_model.fit(delta, t=time, weights =errors, exponent=0.15, offset = 21.5)
+        exp = result.params['exponent'].value
+        exp_err = result.params['exponent'].stderr
+
+        exp_list.append(1/exp)
+        exp_err_list.append(exp_err)
+    
     plt.clf()
-    plt.plot(time, delta, 'o-')
-    plt.yscale('log')
+    plt.plot(mass_list, exp_list, 'o')
     plt.show()
 
-    our_model = models.Model(fit_funtion)
-    result    = our_model.fit(delta, t=time, weights =errors, exponent=0.15, offset = 21.5)
-    print(result.fit_report())
 
-#simulation_multiple_star_system(4)
+#simulation_multiple_star_system(1)
 calculate_exponent()
