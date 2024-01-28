@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from lmfit import models
 
+import data
+
 # gravitational constant adjusted for years
 G_CONSTANT = 6.67e-11 * (3.16e7)**2
 
@@ -194,6 +196,7 @@ def simulation_solar_system():
     days = [i for i in range(years * fraction)]
 
     energy = [((solarsys.energy[i] - solarsys.energy[0]) / solarsys.energy[0]) for i in range(len(solarsys.energy))]
+    print(solarsys.energy[0])
     plt.clf()
     plt.plot(days, energy, "b-")
     plt.title("Total Energy Difference")
@@ -250,7 +253,7 @@ def simulation_multiple_star_system(n):
         pm_ra = np.array([-3.710, -3.6, -3.781]) * np.pi/180 * 1/3600 # proper motion right ascension
         pm_dec = np.array([0.482, 0.952, 0.770]) * np.pi/180 * 1/3600 # proper motion declination
         distance = np.array([1.347, 1.347, 1.301]) * 3.0857e16
-        ra = np.array([14/24 + 39/1440 + 40.90/86400, 14/24 + 39/1440 + 39.39/86400, 14/24 + 29/1440 + 34.43/86400]) * np.pi/180 # (14h39m40.90s) 
+        ra = np.array([14/24 + 39/1440 + 40.90/86400, 14/24 + 39/1440 + 39.39/86400, 14/24 + 29/1440 + 34.43/86400]) * np.pi/180 # (14h39m40.90s)
         dec = np.array([-(60/24 + 50/1440 + 6.53/86400), -(60/24 + 50/1440 + 22.10/86400), -(62/24 + 40/1440 + 34.26/86400)]) * np.pi/180
         radial_v = np.array([-21.4, -18.6, -22.204]) * 3.16e10 # radial velocity
 
@@ -298,7 +301,6 @@ def make_solar_system(solarsys, x_value, mass_sun, v):
     mercury = Body(3.302e23, np.array([-1.0355e1, -4.6637e1, -2.8598e0]) * 3.16e10 * v, np.array([0,0,0]), np.array([-5.9051e10, 2.5058e8, 5.3457e9]), 3, "burlywood", solarsys)
     venus = Body(48.685e24, np.array([3.6162e0, 3.464e1, 2.6736e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([1.0657e11, -1.1721e10, -6.3566e9]), 5, "blanchedalmond", solarsys)
     earth = Body(5.9722e24, np.array([-2.5929e1, -1.5639e1, 1.1483e-3]) * 3.16e10 * v, np.array([0,0,0]), np.array([x_value, 1.2570e11, 2.5858e7]), 5, "deepskyblue", solarsys)
-    #moon = Body(7.349e22, np.array([-2.5005e1, -1.5036e1, -9.1161e-3]) * 3.16e10, np.array([0,0,0]), np.array([-7.7780e10, 1.2541e11, -5.0425e6]), 1, "darkgray", solarsys)
     mars = Body(6.4171e23, np.array([-2.3074e1, -1.3303e0, 5.3856e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([-3.4426e10, 2.3527e11, 5.7741e9]), 4, "goldenrod", solarsys)
     jupiter = Body(1.8982e27, np.array([-3.3404e0, 1.3283e1, 1.9609e-2]) * 3.16e10 * v, np.array([0,0,0]), np.array([7.1676e11, 1.8057e11, -1.6785e10]), 12, "peru", solarsys)
     saturn = Body(5.6834e26, np.array([4.7786e0, 8.0455e0, 3.3070e-1]) * 3.16e10 * v, np.array([0,0,0]), np.array([1.2262e12, -8.0900e11, -3.4756e10]), 10, "khaki", solarsys)
@@ -326,6 +328,9 @@ def calculate_exponent():
         delta = []
         time = []
         errors = []
+        err_x = 0
+        err_v = 0
+        counter = 0
 
         number = fraction/10 - 1
         for t in range(years * fraction):
@@ -338,10 +343,17 @@ def calculate_exponent():
                 for i in range(len(solarsys1.bodies)):
                     dx += np.linalg.norm(solarsys2.bodies[i].position - solarsys1.bodies[i].position)**2
                     dv += np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)**2
-                
+
+                    true_x = np.array([data.true_pos[30 * i + counter * 3], data.true_pos[30 * i + counter * 3 + 1], data.true_pos[30 * i + counter * 3 + 2]])
+                    true_v = np.array([data.true_vel[30 * i + counter * 3], data.true_vel[30 * i + counter * 3 + 1], data.true_vel[30 * i + counter * 3 + 2]])
+
+                    err_x += np.linalg.norm(np.abs(true_x * 1e3 - solarsys2.bodies[i].position) - np.abs(true_x * 1e3 - solarsys1.bodies[i].position))**2
+                    err_v += np.linalg.norm(np.abs(true_v * 3.16e10 * np.sqrt(solarsys1.bodies[i].mass) - solarsys2.bodies[i].velocity) - np.abs(true_v * 3.16e10 * np.sqrt(solarsys1.bodies[i].mass) - solarsys1.bodies[i].velocity))**2
+
                 delta.append(0.5 * np.log(dx + dv))
                 time.append(t)
-                errors.append(0.01)
+                errors.append(0.5 * np.log(err_x + err_v))
+                counter += 1
                 number += fraction/10
 
         our_model = models.Model(fit_funtion)
@@ -350,10 +362,10 @@ def calculate_exponent():
         exp_err = result.params['exponent'].stderr
 
         exp_list.append(1/exp)
-        exp_err_list.append(exp_err)
-    
+        exp_err_list.append(1/exp_err)
+
     plt.clf()
-    plt.plot(mass_list, exp_list, 'o')
+    plt.errorbar(mass_list, exp_list, yerr=exp_err_list, fmt=".w")
     plt.show()
 
 
