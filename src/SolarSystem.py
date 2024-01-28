@@ -328,8 +328,6 @@ def calculate_exponent():
         delta = []
         time = []
         errors = []
-        err_x = 0
-        err_v = 0
         counter = 0
 
         number = fraction/10 - 1
@@ -340,29 +338,48 @@ def calculate_exponent():
             if t == number:
                 dx = 0
                 dv = 0
-                for i in range(len(solarsys1.bodies)):
-                    dx += np.linalg.norm(solarsys2.bodies[i].position - solarsys1.bodies[i].position)**2
-                    dv += np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)**2
+                err_x = 0
+                err_v = 0
 
+                for i in range(len(solarsys1.bodies)):
+                    # calculate distance between the same particles in different simulation
+                    delta_x = np.linalg.norm(solarsys2.bodies[i].position - solarsys1.bodies[i].position)
+                    delta_v = np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)
+
+                    # calculate phase space distance
+                    dx += delta_x**2
+                    dv += delta_v**2
+
+                    # calculate error on position and velocity
                     true_x = np.array([data.true_pos[30 * i + counter * 3], data.true_pos[30 * i + counter * 3 + 1], data.true_pos[30 * i + counter * 3 + 2]])
                     true_v = np.array([data.true_vel[30 * i + counter * 3], data.true_vel[30 * i + counter * 3 + 1], data.true_vel[30 * i + counter * 3 + 2]])
 
-                    err_x += np.linalg.norm(np.abs(true_x * 1e3 - solarsys2.bodies[i].position) - np.abs(true_x * 1e3 - solarsys1.bodies[i].position))**2
-                    err_v += np.linalg.norm(np.abs(true_v * 3.16e10 * np.sqrt(solarsys1.bodies[i].mass) - solarsys2.bodies[i].velocity) - np.abs(true_v * 3.16e10 * np.sqrt(solarsys1.bodies[i].mass) - solarsys1.bodies[i].velocity))**2
+                    delta_err_x = np.linalg.norm(true_x * 1e3 - solarsys1.bodies[i].position)
+                    delta_err_v = np.linalg.norm(true_v * 3.16e10 * np.sqrt(solarsys1.bodies[i].mass) - solarsys1.bodies[i].velocity)
+
+                    # calculate error on distance and velocity bewteen the same particles
+                    err_dx = np.sqrt(2) * delta_err_x
+                    err_dv = np.sqrt(2) * delta_err_v
+
+                    # calculate total error on distance and velocity
+                    err_x += 2 * err_dx * delta_x
+                    err_v += 2 * err_dv * delta_v
 
                 delta.append(0.5 * np.log(dx + dv))
                 time.append(t)
-                errors.append(0.5 * np.log(err_x + err_v))
+                # append final error for phase space distance on logaritmic scale
+                errors.append(0.5 * (1/(dx + dv)) * (err_x + err_v))
                 counter += 1
                 number += fraction/10
 
+        errors = np.array(errors)
         our_model = models.Model(fit_funtion)
-        result    = our_model.fit(delta, t=time, weights =errors, exponent=0.15, offset = 21.5)
+        result    = our_model.fit(delta, t=time, weights=1/errors, exponent=0.15, offset = 21.5)
         exp = result.params['exponent'].value
         exp_err = result.params['exponent'].stderr
 
         exp_list.append(1/exp)
-        exp_err_list.append(1/exp_err)
+        exp_err_list.append(exp_err / exp**2)
 
     plt.clf()
     plt.errorbar(mass_list, exp_list, yerr=exp_err_list, fmt=".w")
