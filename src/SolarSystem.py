@@ -302,7 +302,7 @@ def plot_errors():
 
     # create plot with error on positions 10 timesteps for 1 year
     x_err, v_err = error_solar_system(test_solarsystem)
-    time = [(i * fraction/10 + 99) for i in range(10)]
+    time = [(i * fraction/10 + (fraction/10 - 1)) for i in range(10)]
 
     plt.plot(time, x_err, 'o', label = 'position error')
     plt.plot(time, v_err, 'o', label = 'velocity error')
@@ -323,53 +323,55 @@ def fit_funtion(t, exponent, offset):
 
 # calculate lyapunov exponent to determine the chaos in the system
 def calculate_exponent():
-    #mass_list = np.array([1/13, 1/10, 1/7, 1/3, 1, 1.2, 1.4, 1.6, 1.8, 2, 4, 6, 8, 10, 15, 20, 25, 30, 40, 50])
-    mass_list = np.array([1, 2, 5, 10])
+    mass_list = np.array([1/13, 1/10, 1/7, 1/3, 1, 1.2, 1.4, 1.6, 1.8, 2, 4, 6, 8, 10, 15, 20, 25, 30, 40, 50])
     exp_list = []
     exp_err_list = []
+    time_planets = []
+    number_of_planets_list = []
+
+    distance_pluto = 5.906e12
 
     test_solarsystem = System()
     make_solar_system(test_solarsystem, -7.7974e10, 1.9885e30, np.sqrt(1))
     delta_err_x_list, delta_err_v_list = error_solar_system(test_solarsystem)
 
-    #time_planets = []
-    #number_of_planets_list = []
-
-    #distance_pluto = 5.906e12
-
     for mass in mass_list:
+        # making all the lists needed
+        delta = []
+        time = []
+        errors = []
+
+        # making all the constants needed
+        append_time = True
+        counter = 0
+        number = fraction/10 - 1
+        number_of_planets = 0
+
+        # making two solar systems with a small difference in x-position for earth
         solarsys1 = System()
         solarsys2 = System()
-
-        #append_time = True
 
         make_solar_system(solarsys1, -7.7974e10, mass * 1.9885e30, np.sqrt(mass))
         make_solar_system(solarsys2, -7.7974001e10, mass * 1.9885e30, np.sqrt(mass))
 
         number_of_bodies = len(solarsys1.bodies)
-
-        delta = []
-        time = []
-        errors = []
-        counter = 0
-
-        #index_planets = [i for i in range(number_of_bodies)]
-
-        number = fraction/10 - 1
-        #number_of_planets = 0
+        index_planets = [i for i in range(number_of_bodies)]
     
         for t in range(years * fraction):
-            #index_remove = []
+            index_remove = []
+
             solarsys1.run_sim()
             solarsys2.run_sim()
 
+            # Only a few snapshots are needed to calculate the exponent
             if t == number:
                 dx = 0
                 dv = 0
                 err_x = 0
                 err_v = 0
 
-                for i in range(len(solarsys1.bodies)):
+                # errors are calculated using error propagation
+                for i in range(number_of_bodies):
                     # calculate distance between the same particles in different simulation
                     delta_x = np.linalg.norm(solarsys2.bodies[i].position - solarsys1.bodies[i].position)
                     delta_v = np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)
@@ -390,57 +392,76 @@ def calculate_exponent():
                     err_x += 2 * err_dx * delta_x
                     err_v += 2 * err_dv * delta_v
 
-                delta.append(0.5 * np.log(dx + dv))
-                time.append(t)
                 # append final error for phase space distance on logaritmic scale
                 errors.append(0.5 * (1/(dx + dv)) * (err_x + err_v))
+                delta.append(0.5 * np.log(dx + dv))
+                time.append(t)
+
                 counter += 1
                 number += fraction/10
 
-                # for i in index_planets:
-                #     position = solarsys1.bodies[i].position
-                #     distance = np.linalg.norm(position)
+                # check if planets are moving out of the solar system
+                for i in index_planets:
+                    position = solarsys1.bodies[i].position
+                    distance = np.linalg.norm(position)
 
-                #     if distance > distance_pluto:
-                #         number_of_planets += 1
-                #         index_remove.append(i)
+                    if distance > distance_pluto:
+                        number_of_planets += 1
+                        index_remove.append(i)
 
-                #         if number_of_planets == 1:
-                #             time_planets.append(t)
-                #             append_time = False
+                        # check time the first planet has moved out of the solar system
+                        if number_of_planets == 1:
+                            time_planets.append(t)
+                            append_time = False
                 
-                # for i in index_remove:
-                #     index_planets.remove(i)
-        
-        # number_of_planets_list.append(number_of_planets)
-        # if append_time == True:
-        #     time_planets.append(years * fraction)
+                for i in index_remove:
+                    index_planets.remove(i)
 
+        # if no planets have moved out of the solar system,
+        # append the total time of the simulation
+        if append_time == True:
+            time_planets.append(years * fraction)
+
+        number_of_planets_list.append(number_of_planets)
+
+        # Fit phase space distance on logaritmic scale to linear function to find lyapunov exponent
         errors = np.array(errors)
         our_model = models.Model(fit_funtion)
         result    = our_model.fit(delta, t=time, weights=1/errors, exponent=0.15, offset = 21.5)
         exp = result.params['exponent'].value
         exp_err = result.params['exponent'].stderr
 
+        # lyapunov time scale is the inverse of the lyapunov exponent
         exp_list.append(1/exp)
         exp_err_list.append(exp_err / exp**2)
 
         # plt.plot(time, delta, 'o')
         # plt.plot(time, result.best_fit, 'o-')
         # plt.show()
-
+    
+    # Plot the lyapunov time scale against the mass in solar masses
     plt.clf()
     plt.errorbar(mass_list, exp_list, yerr=exp_err_list, fmt=".w")
+    plt.title('Lyapunov time for different solar masses')
+    plt.xlabel('Mass of the sun (solar masses)')
+    plt.ylabel('Lyapunov time (years)')
     plt.show()
 
-    # plt.plot(mass_list, number_of_planets_list, 'o')
-    # plt.show()
+    # Plot the number of planets that have moved out of the solar system against the mass
+    plt.plot(mass_list, number_of_planets_list, 'o')
+    plt.title('Number of planets to move outside solar system')
+    plt.xlabel('Mass of the sun (solar masses)')
+    plt.ylabel('Number of planets')
+    plt.show()
 
-    # plt.plot(mass_list, time_planets, 'o')
-    # plt.show()
+    # Plot the time the first planets has moved out of the solar system against the mass
+    plt.plot(mass_list, time_planets, 'o')
+    plt.title('Time the first planets moved outside the solar system')
+    plt.xlabel('Mass of the sun (solar masses)')
+    plt.ylabel(f'Time (1/{fraction} years)')
+    plt.show()
 
 
 #simulation_solar_system(1)
-#calculate_exponent()
-
-plot_errors()
+calculate_exponent()
+#plot_errors()
