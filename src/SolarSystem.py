@@ -18,7 +18,7 @@ import data
 G_CONSTANT = 6.67e-11 * (3.16e7)**2
 
 # 1/fraction decides the size of dt
-fraction = 1000
+fraction = 10000
 dt = 1.0 / fraction
 
 # amount of years the simulation simulates
@@ -115,6 +115,7 @@ class System:
             else:
                 body.new_vel()
 
+
 """
 Creates body object
 
@@ -207,14 +208,15 @@ def make_solar_system(solarsys, x_value, mass_sun, v):
 
 # Function to calculate the total energy difference in percentage for every timestep
 # compared to the total energy at t = 0. This can be used to check energy conservation.
-#
-# Argument solarsys = system for which to calculate the difference in total energy.
+# Arguments: solarsys = system for which to calculate the difference in total energy.
 # Side effect: plot is created to show difference in energy over time.
 def calculate_energy_difference(solarsys):
     days = [i for i in range(years * fraction)]
 
+    # compare the energy at timestep i to the energy at t = 0 and calculate the percentage error.
     energy = [((solarsys.energy[i] - solarsys.energy[0]) * 100 / solarsys.energy[0]) for i in range(len(solarsys.energy))]
 
+    # Plot the percentage error of the energy over time
     plt.clf()
     plt.plot(days, energy, "o-")
     plt.title("Total Energy Difference")
@@ -225,13 +227,14 @@ def calculate_energy_difference(solarsys):
 
 # Calculate error on positions and velocities for solar system
 # Average error of all the planets is calculated and used as error.
-# Arguments:
-# system = solar system with regular solar mass to calculate errrors
-#
+# Arguments: system = solar system with regular solar mass to calculate errors
 # Return: 2 lists with errors on position and velocity
 # for 10 timesteps equally distributed over 1 year
 def error_solar_system(system):
+    # counter keeps track of the timestep
     counter = 0
+
+    # number is set to the time to calculate the errors 
     number = fraction/10 - 1
 
     err_vel_list = []
@@ -240,23 +243,29 @@ def error_solar_system(system):
     for t in range(years * fraction):
         system.run_sim()
 
+        # errors are not calculated every timestep, only 10 timesteps in 1 year
         if t == number:
             err_list_x = []
             err_list_v = []
+
             for i in range(len(system.bodies)):
-                # calculate error on position and velocity
+                # calculate error on position and velocity by comparing the numerical
+                # value to the exact solution from nasa's Horizons dataset
                 true_x = np.array([data.true_pos[30 * i + counter * 3], data.true_pos[30 * i + counter * 3 + 1], data.true_pos[30 * i + counter * 3 + 2]])
                 true_v = np.array([data.true_vel[30 * i + counter * 3], data.true_vel[30 * i + counter * 3 + 1], data.true_vel[30 * i + counter * 3 + 2]])
 
                 err_x = np.linalg.norm(true_x * 1e3 - system.bodies[i].position)
                 err_v = np.linalg.norm(true_v * 3.16e10 - system.bodies[i].velocity)
 
+                # calculate the percentage errors
                 err_list_x.append(err_x * 100 / np.linalg.norm(true_x * 1e3))
                 err_list_v.append(err_v * 100 / np.linalg.norm(true_v * 3.16e10))
 
+            # update counter and number for the next timestep to calculate the errors
             counter += 1
             number += fraction/10
 
+            # take the average value of the errors of all the planet as error
             err_pos_list.append(np.mean(err_list_x))
             err_vel_list.append(np.mean(err_list_v))
 
@@ -264,11 +273,12 @@ def error_solar_system(system):
 
 
 # Function to run the simulation of the solar system.
-# Argument mass = mass of the sun expressed in solar masses.
+# Arguments: mass = mass of the sun expressed in solar masses.
 #   So, a mass of 2 = 2 * solar mass
 # The mass of the sun is altered, and the speed of the planets is altered to create stable orbits.
-#   The speed is multiplied by sqrt of the mass, this is based on v = sqrt(G * M / r)
+# The speed is multiplied by sqrt of the mass, this is based on v = sqrt(G * M / r)
 # starting values taken from nasa horizon data set @ 22 jan 2023 00:00
+# Side effect: show the simulation of the solar system
 def simulation_solar_system(mass):
     m = np.sqrt(mass)
 
@@ -284,6 +294,7 @@ def simulation_solar_system(mass):
     uranus = Body(86.81e24, np.array([-5.0654e0, 4.2894e0, 8.1455e-2]) * 3.16e10 * m, np.array([0,0,0]), np.array([1.9896e12, 2.1661e12,-1.7730e10]), 8, "paleturquoise", solarsys)
     neptune = Body(102.4e24, np.array([4.8688e-1, 5.4420e0,-1.2344e-1]) * 3.16e10 * m, np.array([0,0,0]), np.array([4.4517e12, -4.3035e11, -9.3732e10]), 7, "cyan", solarsys)
 
+    # run the simulation
     for t in range(years * fraction):
         solarsys.run_sim()
 
@@ -295,15 +306,21 @@ def simulation_solar_system(mass):
             for artist in plt.gca().get_lines():
                 artist.remove()
 
+
+# Function to plot the errors on position, velocity and energy.
+# Errors on position and velocity are calculated using the function error_solar_system.
+# Error on the energy is calculated and plotted using the function claculate_energy_difference.
+# Side effect: percentage errors on position, velocity and energy is plotted over time.
 def plot_errors():
-    # make solar system
+    # make solar system with regular solar mass
     test_solarsystem = System()
     make_solar_system(test_solarsystem, -7.7974e10, 1.9885e30, np.sqrt(1))
 
-    # create plot with error on positions 10 timesteps for 1 year
+    # calculate error on positions and velocities for 10 timesteps in 1 year
     x_err, v_err = error_solar_system(test_solarsystem)
     time = [(i * fraction/10 + (fraction/10 - 1)) for i in range(10)]
 
+    # plot percentage errors on position and velocity 
     plt.plot(time, x_err, 'o', label = 'position error')
     plt.plot(time, v_err, 'o', label = 'velocity error')
     plt.legend()
@@ -315,22 +332,32 @@ def plot_errors():
     # create plot with energy difference for every timestep
     calculate_energy_difference(test_solarsystem)
 
-# create function to describe data
+
+# create linear function to describe data
 def fit_funtion(t, exponent, offset):
     delta = exponent * t + offset
     return delta
 
 
-# calculate lyapunov exponent to determine the chaos in the system
+# Calculate lyapunov time scale to determine the stability
+# of the solar system with altered solar mass.
+# Lyapunov exponent is calculated by fitting a linear function to the phase space
+# distance over time in log space. The lyapunov time scale is the inverse of the exponent.
+# The exponent is calculated at 10 timesteps equally distributed over 1 year.
+# Side effect: shows a plot of the lyapunov time against the solar mass and a plot of the number
+# of planets that moved out of the solar system during the simulation against the solar mass.
 def calculate_exponent():
     mass_list = np.array([1/13, 1/10, 1/7, 1/3, 1, 1.2, 1.4, 1.6, 1.8, 2, 4, 6, 8, 10, 15, 20, 25, 30, 40, 50])
-    exp_list = []
-    exp_err_list = []
-    time_planets = []
-    number_of_planets_list = []
+    exp_list = []               # list containing the lyapunov time scale for different solar masses
+    exp_err_list = []           # errors on the lyapunov time scale
+    number_of_planets_list = [] # number of planets to have moved out of the solar system
 
+    # planets have moved out of the solar system if they are further away than Pluto
+    # this is used as a check for the stability of the planetary orbits
     distance_pluto = 5.906e12
 
+    # make a solar system with regular solar mass to determine the
+    # relative errors for position and velocity
     test_solarsystem = System()
     make_solar_system(test_solarsystem, -7.7974e10, 1.9885e30, np.sqrt(1))
     delta_err_x_list, delta_err_v_list = error_solar_system(test_solarsystem)
@@ -342,24 +369,28 @@ def calculate_exponent():
         errors = []
 
         # making all the constants needed
-        append_time = True
         counter = 0
         number = fraction/10 - 1
         number_of_planets = 0
 
         # making two solar systems with a small difference in x-position for earth
+        # and velocity adjusted to the mass
         solarsys1 = System()
         solarsys2 = System()
 
         make_solar_system(solarsys1, -7.7974e10, mass * 1.9885e30, np.sqrt(mass))
         make_solar_system(solarsys2, -7.7974001e10, mass * 1.9885e30, np.sqrt(mass))
 
+        # calculate total number of bodies added to the solar system
+        # and make index list for every planet and the sun
         number_of_bodies = len(solarsys1.bodies)
         index_planets = [i for i in range(number_of_bodies)]
     
         for t in range(years * fraction):
+            # list for planets that have moved out of the solar system
             index_remove = []
 
+            # run both simulations with small difference in x-position of earth
             solarsys1.run_sim()
             solarsys2.run_sim()
 
@@ -377,18 +408,21 @@ def calculate_exponent():
                     delta_v = np.linalg.norm(solarsys2.bodies[i].velocity - solarsys1.bodies[i].velocity)
 
                     # calculate phase space distance
+                    # add difference in position and velocity squared for every planet
                     dx += delta_x**2
                     dv += delta_v**2
 
                     # calculate error on position and velocity
+                    # using relative errors of the solar system with regular solar mass
                     delta_err_x = (delta_err_x_list[counter] / 100) * np.linalg.norm(solarsys1.bodies[i].position)
-                    delta_err_v = (delta_err_v_list[counter] * np.sqrt(mass) / 100) * np.linalg.norm(solarsys1.bodies[i].velocity)
+                    delta_err_v = (delta_err_v_list[counter] / 100) * np.linalg.norm(solarsys1.bodies[i].velocity)
 
-                    # calculate error on distance and velocity bewteen the same particles
+                    # calculate error on difference in distance and velocity bewteen the same particles
+                    # assuming same error on position and velocity for both solar systems
                     err_dx = np.sqrt(2) * delta_err_x
                     err_dv = np.sqrt(2) * delta_err_v
 
-                    # calculate total error on distance and velocity
+                    # calculate total error on phase space distance
                     err_x += 2 * err_dx * delta_x
                     err_v += 2 * err_dv * delta_v
 
@@ -397,7 +431,10 @@ def calculate_exponent():
                 delta.append(0.5 * np.log(dx + dv))
                 time.append(t)
 
+                # update counter to get the position and velocity error for the next snapshot
                 counter += 1
+
+                # update number to the timestep for the next snapshot
                 number += fraction/10
 
                 # check if planets are moving out of the solar system
@@ -408,19 +445,9 @@ def calculate_exponent():
                     if distance > distance_pluto:
                         number_of_planets += 1
                         index_remove.append(i)
-
-                        # check time the first planet has moved out of the solar system
-                        if number_of_planets == 1:
-                            time_planets.append(t)
-                            append_time = False
                 
                 for i in index_remove:
                     index_planets.remove(i)
-
-        # if no planets have moved out of the solar system,
-        # append the total time of the simulation
-        if append_time == True:
-            time_planets.append(years * fraction)
 
         number_of_planets_list.append(number_of_planets)
 
@@ -434,10 +461,6 @@ def calculate_exponent():
         # lyapunov time scale is the inverse of the lyapunov exponent
         exp_list.append(1/exp)
         exp_err_list.append(exp_err / exp**2)
-
-        # plt.plot(time, delta, 'o')
-        # plt.plot(time, result.best_fit, 'o-')
-        # plt.show()
     
     # Plot the lyapunov time scale against the mass in solar masses
     plt.clf()
@@ -454,14 +477,7 @@ def calculate_exponent():
     plt.ylabel('Number of planets')
     plt.show()
 
-    # Plot the time the first planets has moved out of the solar system against the mass
-    plt.plot(mass_list, time_planets, 'o')
-    plt.title('Time the first planets moved outside the solar system')
-    plt.xlabel('Mass of the sun (solar masses)')
-    plt.ylabel(f'Time (1/{fraction} years)')
-    plt.show()
-
 
 #simulation_solar_system(1)
-calculate_exponent()
+#calculate_exponent()
 #plot_errors()
