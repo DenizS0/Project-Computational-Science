@@ -216,7 +216,7 @@ def calculate_energy_difference(solarsys):
     energy = [((solarsys.energy[i] - solarsys.energy[0]) * 100 / solarsys.energy[0]) for i in range(len(solarsys.energy))]
 
     plt.clf()
-    plt.plot(days, energy, "o-")
+    plt.plot(days, energy, ",w")
     plt.title("Total Energy Difference")
     plt.ylabel("Percentage error (%)")
     plt.xlabel("Number of time steps")
@@ -351,7 +351,7 @@ def fit_funtion(t, exponent, offset):
     of planets that moved out of the solar system during the simulation against the solar mass.
 """
 def calculate_exponent():
-    mass_list = np.array([1/13, 1/10, 1/7, 1/3, 1, 1.2, 1.4, 1.6, 1.8, 2, 4, 6, 8, 10, 15, 20, 25, 30, 40, 50])
+    mass_list = np.array([1/13, 1/5, 1/3, 3/4, 1, 1.4, 1.6, 1.8, 2, 3, 4, 6, 8, 10])
     exp_list = []               # list containing the lyapunov time scale for different solar masses
     exp_err_list = []           # errors on the lyapunov time scale
     number_of_planets_list = [] # number of planets to have moved out of the solar system
